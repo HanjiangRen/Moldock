@@ -1,0 +1,53 @@
+name: Build MolDock (macOS + Windows)
+
+# 在 GitHub 仓库 Actions 中一键构建两个平台的 MolDock 安装包
+# 用法：推送任意分支触发，或在仓库 Actions 页面手动 "Run workflow"
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: 安装 Python 依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller meeko rdkit gemmi scipy numpy
+
+      - name: 下载 AutoDock Vina 1.2.7 二进制（按平台）
+        run: |
+          mkdir -p bin
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            curl -L -o bin/vina.exe \
+              https://github.com/ccsb-scripps/AutoDock-Vina/releases/download/v1.2.7/vina_1.2.7_win.exe
+          else
+            curl -L -o bin/vina \
+              https://github.com/ccsb-scripps/AutoDock-Vina/releases/download/v1.2.7/vina_1.2.7_mac_x86_64
+            chmod +x bin/vina
+          fi
+        shell: bash
+
+      - name: PyInstaller 打包
+        run: python -m PyInstaller MolDock.spec --noconfirm
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: MolDock-${{ matrix.os }}
+          path: |
+            dist/MolDock.app
+            dist/MolDock/
+          if-no-files-found: error

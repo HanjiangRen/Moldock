@@ -1,0 +1,19 @@
+# 分子对接依赖
+# Python 3.9~3.12 可直接 pip install vina（预编译包）；
+# Python 3.13+ 暂无 vina 预编译包，请使用官方 vina 命令行二进制：
+#   https://github.com/ccsb-scripps/AutoDock-Vina/releases
+# 下载后放入 PATH，或设置环境变量 VINA_EXE 指向可执行文件。
+
+# 对接引擎（二选一：pip 包 或 命令行二进制）
+vina>=1.2.3        ; python_version < "3.13"
+
+# 配体 / 受体制备（推荐）
+meeko>=0.8.0       # 配体与受体 PDBQT 制备（替代 MGLTools）
+rdkit>=2023.9      # 三维构象生成、SMILES/SDF 处理
+scipy              # meeko 受体制备依赖
+gemmi              # meeko 受体制备依赖
+numpy
+
+# 备选制备工具（命令行，需自行安装）：
+#   Open Babel:  brew install open-babel   (macOS)
+#                apt install openbabel      (Ubuntu/Debian)
